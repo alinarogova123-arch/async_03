@@ -1,6 +1,17 @@
 import asyncio
 import argparse
 import sys
+import logging
+
+
+class MyLogsHandler(logging.Handler):
+    def emit(self, record):
+        log_entry = self.format(record)
+        print(log_entry)
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+logger.addHandler(MyLogsHandler())
 
 
 def create_parcer():
@@ -18,21 +29,26 @@ async def tcp_echo_client(host, port, token):
     reader, writer = await asyncio.open_connection(
         host, port)
 
-    # data = await reader.readuntil(b'\n')
+    data = await reader.readuntil(b'\n')
     # print(f'Received: {data.decode()!r}')
+    logger.debug(f'DEBUG:Received: {data.decode()!r}')
 
     writer.write(f"{token}\n".encode())
     await writer.drain()
-    print(f'Send: {token!r}')
+    # print(f'Send: {token!r}')
+    logger.debug(f'DEBUG:Send: {token!r}')
 
-    # data = await reader.readuntil(b'\n')
+    data = await reader.readuntil(b'\n')
     # print(f'Received: {data.decode()!r}')
-    # data = await reader.readuntil(b'\n')
+    logger.debug(f'DEBUG:Received: {data.decode()!r}')
+    data = await reader.readuntil(b'\n')
     # print(f'Received: {data.decode()!r}')
+    logger.debug(f'DEBUG:Received: {data.decode()!r}')
 
     writer.write(f"{message}\n\n".encode())
     await writer.drain()
-    print(f'Send: {message!r}')
+    # print(f'Send: {message!r}')
+    logger.debug(f'DEBUG:Send: {message!r}')
 
     writer.close()
     await writer.wait_closed()
