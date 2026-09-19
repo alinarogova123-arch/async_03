@@ -2,6 +2,7 @@ import asyncio
 import argparse
 import sys
 import logging
+import json
 
 
 class MyLogsHandler(logging.Handler):
@@ -39,8 +40,12 @@ async def tcp_echo_client(host, port, token):
     logger.debug(f'DEBUG:Send: {token!r}')
 
     data = await reader.readuntil(b'\n')
-    # print(f'Received: {data.decode()!r}')
+    if not json.loads(data.decode()):
+        print("Неизвестный токен. Проверьте его или зарегистрируйте заново.")
+        return
+
     logger.debug(f'DEBUG:Received: {data.decode()!r}')
+
     data = await reader.readuntil(b'\n')
     # print(f'Received: {data.decode()!r}')
     logger.debug(f'DEBUG:Received: {data.decode()!r}')
