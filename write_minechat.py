@@ -80,12 +80,12 @@ async def register(TOKEN_KEY, host, port, nickname):
     writer.write(f"{nickname}\n".encode())
     logger.debug(f'DEBUG:Send: {nickname!r}')
 
-    data = await reader.readuntil(b'\n')
-    data = json.loads(data.decode())
-    logger.debug(f'DEBUG:Received: {data}')
+    account_info = await reader.readuntil(b'\n')
+    account_info = json.loads(account_info.decode())
+    logger.debug(f'DEBUG:Received: {account_info}')
 
     async with aiofiles.open(TOKEN_KEY, "w") as file:
-        await file.write(data.get("account_hash"))
+        await file.write(account_info.get("account_hash"))
 
 
 async def authorise(host, port, token):
@@ -99,15 +99,15 @@ async def authorise(host, port, token):
     await writer.drain()
     logger.debug(f'DEBUG:Send: {token!r}')
 
-    data = await reader.readuntil(b'\n')
-    data = json.loads(data.decode())
+    account_info = await reader.readuntil(b'\n')
+    account_info = json.loads(account_info.decode())
 
-    if not data:
+    if not account_info:
         writer.close()
         await writer.wait_closed()
         return None
 
-    logger.debug(f'DEBUG:Received: {data}')
+    logger.debug(f'DEBUG:Received: {account_info}')
 
     data = await reader.readuntil(b'\n')
     logger.debug(f'DEBUG:Received: {data.decode()!r}')
