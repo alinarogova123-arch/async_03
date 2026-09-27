@@ -112,13 +112,16 @@ async def authorise(host, port, token):
     data = await reader.readuntil(b'\n')
     logger.debug(f'DEBUG:Received: {data.decode()!r}')
 
-    return writer
+    return reader, writer
 
 
-async def submit_message(writer, message):
+async def submit_message(reader, writer, message):
     writer.write(f"{message}\n\n".encode())
     await writer.drain()
     logger.debug(f'DEBUG:Send: {message!r}')
+
+    data = await reader.readuntil(b'\n')
+    logger.debug(f'DEBUG:Received: {data.decode()!r}')
 
 
 async def main():
@@ -132,13 +135,13 @@ async def main():
         async with aiofiles.open(TOKEN_KEY, "r", encoding="utf-8") as file:
             token = await file.read()
     
-    writer = await authorise(args.host, args.port, token)
+    reader, writer = await authorise(args.host, args.port, token)
     if not writer:
         logger.info("Неизвестный токен. Проверьте его или зарегистрируйте заново.")
         return
 
     message = args.message.replace("\n", " ")
-    await submit_message(writer, message)
+    await submit_message(reader, writer, message)
 
     writer.close()
     await writer.wait_closed()
